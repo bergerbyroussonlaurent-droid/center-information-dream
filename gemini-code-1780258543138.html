@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>C.I.D Center Information Dream</title>
+    <meta name="description" content="C.I.D IS HERE. Accès restreint au réseau interne du Center Information Dream. Surveillance des anomalies cognitives et index des sujets récupérés.">
+
+    <style>
+        /* BASE & THEME */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: #050505;
+            color: #00ff66;
+            font-family: 'Consolas', 'Courier New', Courier, monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-x: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* CRT SCREEN EFFECT & GLITCH ANIMS */
+        body::after {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 99999;
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+        }
+
+        /* HEADER */
+        header {
+            border-bottom: 2px solid #00ff66;
+            padding: 15px 20px;
+            background-color: #0a0a0a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+        .header-meta {
+            text-align: right;
+            font-size: 0.9rem;
+        }
+        .status-blink {
+            animation: blink 1.5s infinite;
+        }
+
+        /* NAVIGATION */
+        nav {
+            background-color: #0d0d0d;
+            border-bottom: 1px solid #005522;
+            display: flex;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            border-right: 1px solid #005522;
+            color: #00aa44;
+            padding: 10px 20px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover {
+            background-color: #003311;
+            color: #00ff66;
+        }
+        .tab-btn.active {
+            background-color: #005522;
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        /* MAIN CONTAINER */
+        #main-content {
+            flex-grow: 1;
+            overflow-y: scroll;
+            padding: 25px;
+            position: relative;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* UI ELEMENTS */
+        h2 {
+            border-bottom: 1px dashed #00ff66;
+            padding-bottom: 5px;
+            margin-bottom: 20px;
+            color: #ffffff;
+            letter-spacing: 1px;
+        }
+        .log-panel, .archive-list, .data-table {
+            background-color: #080808;
+            border: 1px solid #005522;
+            padding: 15px;
+            margin-bottom: 25px;
+        }
+        .live-log-row {
+            margin-bottom: 4px;
+            font-size: 0.85rem;
+        }
+        .timestamp { color: #888888; margin-right: 10px; }
+        .tag-info { color: #00aaff; }
+        .tag-warn { color: #ffaa00; }
+        .tag-crit { color: #ff3333; }
+
+        /* DATA DUMP GENERATION STYLES */
+        .huge-dump {
+            font-size: 0.85rem;
+            color: #00cc55;
+        }
+        .dump-line {
+            border-bottom: 1px solid #021a0a;
+            padding: 6px 0;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 10px;
+        }
+        .machine-card, .cam-card {
+            border: 1px solid #005522;
+            padding: 10px;
+            background: #090909;
+        }
+        .cam-feed {
+            height: 80px;
+            background: #111;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 1px solid #222;
+            margin-top: 5px;
+        }
+        .cam-feed.lost {
+            background: #200;
+            color: #ff3333;
+            animation: static-noise 0.2s infinite;
+        }
+
+        /* TERMINAL INTERACTIVE */
+        .terminal-wrapper {
+            background-color: #000;
+            border: 2px solid #00ff66;
+            padding: 20px;
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+        .terminal-output {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+        }
+        .terminal-input-line {
+            display: flex;
+            align-items: center;
+        }
+        .terminal-prompt { margin-right: 10px; color: #ffffff; }
+        .terminal-input {
+            background: none;
+            border: none;
+            color: #00ff66;
+            font-family: inherit;
+            font-size: 0.9rem;
+            width: 100%;
+            outline: none;
+        }
+
+        /* SYSTEM CORRUPTION & FINAL EVENTS (TRIGGERED BY 1982) */
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        @keyframes static-noise {
+            0% { background-color: #1a0505; opacity: 0.9; }
+            50% { background-color: #2a0a0a; opacity: 1; }
+            100% { background-color: #150202; opacity: 0.85; }
+        }
+        @keyframes screen-shake {
+            0% { transform: translate(0, 0); }
+            20% { transform: translate(-3px, 3px); }
+            40% { transform: translate(3px, -2px); }
+            60% { transform: translate(-2px, -3px); }
+            80% { transform: translate(3px, 3px); }
+            100% { transform: translate(0, 0); }
+        }
+        
+        body.corrupted {
+            background-color: #1a0000 !important;
+            color: #ff3333 !important;
+            animation: screen-shake 0.15s infinite;
+        }
+        body.corrupted header, body.corrupted nav, body.corrupted #main-content {
+            border-color: #ff3333 !important;
+        }
+        body.corrupted .tab-btn {
+            color: #aa2222 !important;
+            border-color: #aa2222 !important;
+        }
+        body.corrupted .tab-btn.active {
+            background-color: #ff3333 !important;
+            color: #000000 !important;
+        }
+        body.corrupted h2, body.corrupted .terminal-wrapper {
+            border-color: #ff3333 !important;
+            color: #ff9999 !important;
+        }
+        
+        /* WINDOWS 95 GLITCH POPUPS */
+        .win95-popup {
+            position: fixed;
+            width: 300px;
+            background: #c0c0c0;
+            border: 2px solid;
+            border-color: #fff #808080 #808080 #fff;
+            color: #000;
+            font-family: 'Arial', sans-serif;
+            z-index: 10000;
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.7);
+        }
+        .win95-title {
+            background: #000080;
+            color: #fff;
+            padding: 3px 5px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+        .win95-close {
+            background: #c0c0c0;
+            border: 1px solid;
+            border-color: #fff #808080 #808080 #fff;
+            width: 14px; height: 14px;
+            font-size: 9px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-weight: bold;
+        }
+        .win95-body {
+            padding: 15px;
+            font-size: 13px;
+            text-align: center;
+            background: #c0c0c0;
+            word-break: break-all;
+        }
+        .win95-btn {
+            margin-top: 10px;
+            background: #c0c0c0;
+            border: 1px solid;
+            border-color: #fff #808080 #808080 #fff;
+            padding: 4px 15px;
+            cursor: pointer;
+            display: inline-block;
+        }
+        
+        .yt-spam-link {
+            color: #ff3333 !important;
+            font-weight: bold;
+            display: block;
+            margin: 2px 0;
+            text-decoration: underline;
+        }
+
+        /* OVERLAY POUR INITIALISATION AUDIO */
+        #boot-overlay {
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: #000;
+            z-index: 999999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #00ff66;
+            font-family: 'Consolas', monospace;
+            cursor: pointer;
+        }
+        .boot-btn {
+            background: none;
+            border: 1px solid #00ff66;
+            color: #00ff66;
+            padding: 15px 30px;
+            font-family: inherit;
+            font-size: 1.2rem;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        .boot-btn:hover {
+            background: #002208;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="boot-overlay" onclick="initializeSystem()">
+        <div>[ CENTER INFORMATION DREAM - INTRANET BOOT SEQUENCE ]</div>
+        <div>WARNING: AUTHORIZED PERSONNEL ONLY</div>
+        <button class="boot-btn">INITIALIZE SYSTEM ARRAY</button>
+    </div>
+
+    <audio id="incidentAudio" preload="auto">
+        <source src="MON_FICHIER_AUDIO.mp3" type="audio/mpeg">
+    </audio>
+
+    <audio id="sndBoot" src="SON_BOOT.mp3" preload="auto"></audio>
+    <audio id="sndTab" src="SON_ONGLET.mp3" preload="auto"></audio>
+    <audio id="sndGlitch" src="SON_GLITCH_FORT.mp3" preload="auto"></audio>
+    <audio id="sndPopup" src="SON_POPUP.mp3" preload="auto"></audio>
+
+    <header id="site-header">
+        <div class="header-title">CENTER INFORMATION DREAM</div>
+        <div class="header-meta">
+            <div>SYSTEM: <span id="header-net-status">BASE_1V23</span></div>
+            <div>SUBJECTS RECOVERED: <span style="color: #ffffff; font-weight: bold;">1</span></div>
+            <div>SYS_TIME: <span id="live-clock">1982-11-04 00:00:00</span></div>
+        </div>
+    </header>
+
+    <nav id="site-nav">
+        <button class="tab-btn active" onclick="switchTab('HOME')">HOME</button>
+        <button class="tab-btn" onclick="switchTab('ARCHIVES')">ARCHIVES</button>
+        <button class="tab-btn" onclick="switchTab('RESEARCH')">RESEARCH</button>
+        <button class="tab-btn" onclick="switchTab('MACHINES')">MACHINES</button>
+        <button class="tab-btn" onclick="switchTab('NETWORK')">NETWORK</button>
+        <button class="tab-btn" onclick="switchTab('OBSERVATION')">OBSERVATION</button>
+        <button class="tab-btn" onclick="switchTab('SECURITY')">SECURITY</button>
+        <button class="tab-btn" onclick="switchTab('REPORTS')">REPORTS</button>
+        <button class="tab-btn" onclick="switchTab('SUBJECTS')">SUBJECTS</button>
+        <button class="tab-btn" onclick="switchTab('DATABASE')">DATABASE</button>
+        <button class="tab-btn" onclick="switchTab('PROCESS')">PROCESS</button>
+        <button class="tab-btn" onclick="switchTab('TERMINAL')">TERMINAL</button>
+    </nav>
+
+    <main id="main-content">
+
+        <section id="tab-HOME" class="tab-content active">
+            <h2>MAIN CORE OVERVIEW</h2>
+            <div class="log-panel">
+                <h3>LIVE MONITORING SYSTEMS</h3>
+                <div id="live-logs-container" style="height: 250px; overflow-y: auto; font-family: monospace;">
+                </div>
+            </div>
+            <div class="huge-dump" id="home-huge-dump"></div>
+        </section>
+
+        <section id="tab-ARCHIVES" class="tab-content">
+            <h2>SECURE ARCHIVE INTERFACE</h2>
+            <div class="log-panel">
+                <div><strong>ARCHIVE_486 :</strong> CORRUPTED DATA STRIP // DO NOT ACCESS</div>
+                <div><strong>ARCHIVE_332 :</strong> EXTRAPOLATION OF FREQUENCY V-091</div>
+                <div><strong>ARCHIVE_DREAM :</strong> [CLASSIFIED - LEVEL 5 CLEARANCE REQUIRED]</div>
+                <div><strong>ARCHIVE_CLOE :</strong> PHYSICAL METRICS AND SLEEP CYCLES INTEGRATION</div>
+                <div><strong>ARCHIVE_1982 :</strong> RECOVERY STRATAGEM SUMMARY LOGS</div>
+            </div>
+            <div class="huge-dump" id="archives-huge-dump"></div>
+        </section>
+
+        <section id="tab-RESEARCH" class="tab-content">
+            <h2>RESEARCH DEPARTMENT DIRECTIVES</h2>
+            <div class="log-panel" style="border-left: 4px solid #ffaa00;">
+                <p><strong>SUBJECT:</strong> CLOE</p>
+                <p><strong>STATUS:</strong> UNDETERMINED</p>
+                <p><strong>MEMO:</strong> REM sleep tracking indicates severe anomalies. The sub-surface waves do not match human standards. Under no circumstances should the network link be severed.</p>
+            </div>
+            <div class="huge-dump" id="research-huge-dump"></div>
+        </section>
+
+        <section id="tab-MACHINES" class="tab-content">
+            <h2>HARDWARE INFRASTRUCTURE STATUS</h2>
+            <div class="grid-3" id="machines-grid">
+            </div>
+            <div class="huge-dump" id="machines-huge-dump" style="margin-top:20px;"></div>
+        </section>
+
+        <section id="tab-NETWORK" class="tab-content">
+            <h2>INTERNAL LINK TRANSMISSION POOLS</h2>
+            <div class="huge-dump" id="network-huge-dump"></div>
+        </section>
+
+        <section id="tab-OBSERVATION" class="tab-content">
+            <h2>REMOTE FEED MONITORING</h2>
+            <div class="grid-3" style="margin-bottom: 25px;">
+                <div class="cam-card"><div>CAMERA A</div><div class="cam-feed" style="color:#00ff66;">ONLINE // STATIC_IDLE</div></div>
+                <div class="cam-card"><div>CAMERA B</div><div class="cam-feed" style="color:#00ff66;">ONLINE // REM_ROOM</div></div>
+                <div class="cam-card"><div>CAMERA C</div><div class="cam-feed lost">SIGNAL LOST // RECONNECTING...</div></div>
+            </div>
+            <div class="huge-dump" id="observation-huge-dump"></div>
+        </section>
+
+        <section id="tab-SECURITY" class="tab-content">
+            <h2>LOG SECURITY SYSTEM EVENTS</h2>
+            <div class="huge-dump" id="security-huge-dump"></div>
+        </section>
+
+        <section id="tab-REPORTS" class="tab-content">
+            <h2>ANNUAL CLINICAL & FIELD REPORTS</h2>
+            <div class="huge-dump" id="reports-huge-dump"></div>
+        </section>
+
+        <section id="tab-SUBJECTS" class="tab-content">
+            <h2>RECOVERED BIOLOGICAL ASSETS INDEX</h2>
+            <div class="huge-dump" id="subjects-huge-dump"></div>
+        </section>
+
+        <section id="tab-DATABASE" class="tab-content">
+            <h2>RAW FILES & MEMORY STACKS</h2>
+            <div class="huge-dump" id="database-huge-dump"></div>
+        </section>
+
+        <section id="tab-PROCESS" class="tab-content">
+            <h2>CORE PROCESS INJECTION OVERRIDE</h2>
+            <p style="margin-bottom: 15px;">Enter system sequence initialization code below to test node responsiveness.</p>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="process-input" placeholder="ENTER SYSTEM CODE..." style="background:#000; border:1px solid #00ff66; color:#00ff66; padding:8px; font-family:inherit; width: 250px;">
+                <button onclick="checkProcessCode()" style="background:#005522; color:#fff; border:none; padding:8px 15px; font-family:inherit; cursor:pointer;">EXECUTE</button>
+            </div>
+            <div id="process-feedback" style="margin-top: 15px; font-weight: bold;"></div>
+            <div class="huge-dump" id="process-huge-dump" style="margin-top: 30px;"></div>
+        </section>
+
+        <section id="tab-TERMINAL" class="tab-content">
+            <h2>C.I.D. SYSTEM TERMINAL v4.01</h2>
+            <div class="terminal-wrapper">
+                <div class="terminal-output" id="term-out">
+                    <div>CENTER INFORMATION DREAM v4.01 INTERNAL PROTOCOL</div>
+                    <div>Type <span style="color:#fff;">HELP</span> for a list of available commands.</div>
+                    <div>&nbsp;</div>
+                </div>
+                <div class="terminal-input-line">
+                    <span class="terminal-prompt">CID:\SYS&gt;</span>
+                    <input type="text" id="term-in" class="terminal-input" autofocus autocomplete="off">
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        let isCorrupted = false;
+        let audioCtx = null;
+        let glitchGainNode = null;
+        let isMutedByVisibility = false;
+
+        function initializeSystem() {
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            } catch(e) {
+                console.log("Web Audio API non supportée.");
+            }
+            
+            document.getElementById('boot-overlay').style.display = 'none';
+            
+            setInterval(updateLiveLogs, 1000);
+            setInterval(updateDynamicContent, 500);
+
+            playSound('sndBoot', 'boot');
+        }
+
+        document.addEventListener("visibilitychange", function() {
+            const incidentAudioEl = document.getElementById('incidentAudio');
+
+            if (document.hidden) {
+                isMutedByVisibility = true;
+                if (glitchGainNode && audioCtx) {
+                    glitchGainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+                }
+                if (incidentAudioEl) {
+                    incidentAudioEl.muted = true;
+                }
+            } else {
+                isMutedByVisibility = false;
+                if (glitchGainNode && audioCtx) {
+                    glitchGainNode.gain.setValueAtTime(2.0, audioCtx.currentTime);
+                }
+                if (incidentAudioEl) {
+                    incidentAudioEl.muted = false;
+                }
+            }
+        });
+
+        function playSound(elementId, fallbackType) {
+            const audioEl = document.getElementById(elementId);
+            
+            if (audioEl && audioEl.src && !audioEl.src.includes('.mp3') == false) {
+                audioEl.currentTime = 0;
+                audioEl.play().catch(() => {
+                    triggerFallbackSynth(fallbackType);
+                });
+            } else {
+                triggerFallbackSynth(fallbackType);
+            }
+        }
+
+        function triggerFallbackSynth(type) {
+            if (!audioCtx) return;
+            
+            const now = audioCtx.currentTime;
+
+            if (type === 'boot') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.setValueAtTime(900, now + 0.1);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+                osc.start(now); osc.stop(now + 0.4);
+            } 
+            else if (type === 'tab') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(1100, now);
+                gain.gain.setValueAtTime(0.04, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+                osc.start(now); osc.stop(now + 0.08);
+            } 
+            else if (type === 'glitch') {
+                const dist = audioCtx.createWaveShaper();
+                function makeExtremeCurve(amount) {
+                    let k = typeof amount === 'number' ? amount : 50,
+                        n_samples = 44100,
+                        curve = new Float32Array(n_samples),
+                        deg = Math.PI / 180, i = 0, x;
+                    for ( ; i < n_samples; ++i ) {
+                        x = (i * 2) / n_samples - 1;
+                        curve[i] = ( 3 + k ) * x * 45 * deg / ( Math.PI + k * Math.abs(x) );
+                    }
+                    return curve;
+                }
+                dist.curve = makeExtremeCurve(800);
+                dist.oversample = '4x';
+
+                const bufferSize = audioCtx.sampleRate * 2.0;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noiseNode = audioCtx.createBufferSource();
+                noiseNode.buffer = buffer;
+                noiseNode.loop = true;
+
+                const subOsc = audioCtx.createOscillator();
+                subOsc.type = 'sawtooth';
+                subOsc.frequency.setValueAtTime(40, now);
+
+                glitchGainNode = audioCtx.createGain();
+                glitchGainNode.gain.setValueAtTime(2.0, now); 
+
+                subOsc.connect(dist);
+                noiseNode.connect(dist);
+                dist.connect(glitchGainNode);
+                glitchGainNode.connect(audioCtx.destination);
+
+                subOsc.start(now);
+                noiseNode.start(now);
+
+                setInterval(() => {
+                    if (!audioCtx || isMutedByVisibility) return;
+                    let randTime = audioCtx.currentTime;
+                    
+                    subOsc.frequency.setValueAtTime(30 + Math.random() * 25, randTime);
+
+                    if (Math.random() > 0.35) {
+                        glitchGainNode.gain.setValueAtTime(2.5, randTime);
+                    } else {
+                        glitchGainNode.gain.setValueAtTime(0.05, randTime);
+                    }
+                }, 55);
+            } 
+            else if (type === 'popup') {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(120, now);
+                osc.frequency.setValueAtTime(80, now + 0.08);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                osc.start(now); osc.stop(now + 0.25);
+            }
+        }
+
+        // GENERATION DE CONTENU IMMENSE
+        const dumpConfigs = [
+            { id: 'home-huge-dump', prefix: 'SYS_METRIC_POOL_', count: 180, words: ['OK', 'STABLE', 'IDLE', 'SYNCED'] },
+            { id: 'archives-huge-dump', prefix: 'ARC_FILE_HEX_0x', count: 250, words: ['RESTRICTED', 'ARCHIVED_1982', 'INDEX_MISSING', 'DREAM_COMPATIBLE'] },
+            { id: 'research-huge-dump', prefix: 'CLOE_EEG_LOG_LINE_', count: 300, words: ['DELTA_BURST', 'STG_4_ANOMALY', 'AMPLITUDE_HIGH', 'ASYMMETRY'] },
+            { id: 'network-huge-dump', prefix: 'NET_NODE_ROUTE_', count: 220, words: ['PACKET_PASS', 'ROUTING_CID', 'GATEWAY_SECURE', 'BEACON_ACTIVE'] },
+            { id: 'observation-huge-dump', prefix: 'CAM_MATRIX_FRAME_', count: 190, words: ['NO_CHANGE', 'INTERFERENCE_LOW', 'LIGHT_RATIO_0.4', 'SUBJECT_STILL'] },
+            { id: 'security-huge-dump', prefix: 'SEC_AUTH_LOG_', count: 400, words: ['ACCESS GRANTED', 'ACCESS DENIED', 'ARCHIVE LOCKED', 'ARCHIVE OPENED'] },
+            { id: 'reports-huge-dump', prefix: 'REP_POST_RECOVERY_1982_', count: 210, words: ['EVALUATION_PENDING', 'CLASSIFIED_TXT', 'MINIMAL_RESPONSE', 'STABLE_CONDITION'] },
+            { id: 'subjects-huge-dump', prefix: 'SUB_ID_004_METADATA_', count: 230, words: ['METRIC_VERIFIED', 'DNA_MATCH_RECOVERY', 'SINGLE_SUBJECT_VALID', 'VITAL_TRUE'] },
+            { id: 'database-huge-dump', prefix: 'DB_CLUSTER_SECTOR_', count: 350, words: ['SECTOR_CLEAN', 'HEX_BLOCK_READ', 'PARITY_VALID', 'SYS_INDEX'] },
+            { id: 'process-huge-dump', prefix: 'PROC_THREAD_EXEC_', count: 180, words: ['THREAD_SLEEP', 'DAEMON_ALIVE', 'COMPILER_IDLE', 'STANDBY'] }
+        ];
+
+        function generateHugeDataDumps() {
+            dumpConfigs.forEach(cfg => {
+                const container = document.getElementById(cfg.id);
+                if (!container) return;
+                let html = '';
+                for (let i = 1000; i < 1000 + cfg.count; i++) {
+                    const randomWord = cfg.words[Math.floor(Math.random() * cfg.words.length)];
+                    const hexPart = Math.random().toString(16).substr(2, 6).toUpperCase();
+                    html += `<div class="dump-line"><span class="timestamp">[LOG_${i}]</span> ${cfg.prefix}${hexPart} :: Status -> <span class="tag-info">${randomWord}</span></div>`;
+                }
+                container.innerHTML = html;
+            });
+        }
+
+        function generateMachines() {
+            const grid = document.getElementById('machines-grid');
+            if (!grid) return;
+            let gridHtml = '';
+            for (let i = 1; i <= 150; i++) {
+                const num = String(i).padStart(3, '0');
+                gridHtml += `<div class="machine-card" id="mach-card-${num}">
+                    <div><strong>MACHINE A-${num}</strong></div>
+                    <div>TEMP: <span id="mach-temp-${num}">21.4</span>°C</div>
+                    <div>LOAD: <span id="mach-load-${num}">12</span>%</div>
+                </div>`;
+            }
+            grid.innerHTML = gridHtml;
+
+            const dumpContainer = document.getElementById('machines-huge-dump');
+            let dumpHtml = '';
+            for (let i = 0; i < 200; i++) {
+                dumpHtml += `<div class="dump-line"><span class="timestamp">[HARDWARE_LOG]</span> CORE_UNIT_M_${i} reporting nominal voltage and mechanical calibration.</div>`;
+            }
+            if (dumpContainer) dumpContainer.innerHTML = dumpHtml;
+        }
+
+        function switchTab(tabId) {
+            playSound('sndTab', 'tab');
+
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            
+            const buttons = document.querySelectorAll('.tab-btn');
+            for (let btn of buttons) {
+                if (btn.textContent === tabId) {
+                    btn.classList.add('active');
+                    break;
+                }
+            }
+        }
+
+        const logTemplates = [
+            "Archive synchronized successfully.",
+            "Cooling grids remaining stable at baseline.",
+            "SEARCH://DREAM query background task resumed.",
+            "Unauthorized background query detected and suppressed.",
+            "Main frame voltage fluctuations inside normal parameters.",
+            "Background memory sector scan 94% active.",
+            "Pulse frequency synchronization check ongoing.",
+            "Data pipeline flushed without errors."
+        ];
+
+        function updateLiveLogs() {
+            const container = document.getElementById('live-logs-container');
+            if (!container) return;
+            
+            const now = new Date();
+            const timeStr = now.toTimeString().split(' ')[0];
+            const randomMsg = logTemplates[Math.floor(Math.random() * logTemplates.length)];
+            
+            let tag = '<span class="tag-info">[OK]</span>';
+            if (randomMsg.includes('Unauthorized') || randomMsg.includes('fluctuations')) {
+                tag = '<span class="tag-warn">[WARN]</span>';
+            }
+            
+            if (isCorrupted) {
+                const corruptedMessages = ["DREAM INTERFERENCE", "CLOE WAKING UP", "SYSTEM INTEGRITY LOST", "SEARCH://DREAM FORCE INITIALIZED", "1982 EVENT REPEATING"];
+                tag = '<span class="tag-crit">[CRIT_ERR]</span>';
+                container.innerHTML += `<div class="live-log-row"><span class="timestamp">[${timeStr}]</span> ${tag} ${corruptedMessages[Math.floor(Math.random() * corruptedMessages.length)]}</div>`;
+            } else {
+                container.innerHTML += `<div class="live-log-row"><span class="timestamp">[${timeStr}]</span> ${tag} ${randomMsg}</div>`;
+            }
+            
+            container.scrollTop = container.scrollHeight;
+            if (container.children.length > 100) {
+                container.removeChild(container.firstChild);
+            }
+        }
+
+        function updateDynamicContent() {
+            const clock = document.getElementById('live-clock');
+            const now = new Date();
+            if (!isCorrupted) {
+                if (clock) clock.textContent = `1982-11-04 ${now.toTimeString().split(' ')[0]}`;
+            } else {
+                if (clock) clock.textContent = `1982-11-04 23:59:${Math.floor(Math.random() * 89 + 10)}`;
+            }
+
+            for (let i = 1; i <= 150; i += Math.floor(Math.random() * 5 + 1)) {
+                const num = String(i).padStart(3, '0');
+                const tEl = document.getElementById(`mach-temp-${num}`);
+                const lEl = document.getElementById(`mach-load-${num}`);
+                if (tEl && lEl) {
+                    if (!isCorrupted) {
+                        tEl.textContent = (20 + Math.random() * 4).toFixed(1);
+                        lEl.textContent = Math.floor(Math.random() * 25 + 5);
+                    } else {
+                        tEl.textContent = (80 + Math.random() * 40).toFixed(1);
+                        lEl.textContent = Math.floor(Math.random() * 50 + 99);
+                        const card = document.getElementById(`mach-card-${num}`);
+                        if (card) card.style.borderColor = '#ff3333';
+                    }
+                }
+            }
+        }
+
+        function checkProcessCode() {
+            const input = document.getElementById('process-input');
+            const feedback = document.getElementById('process-feedback');
+            if (input.value.trim() === '1982') {
+                feedback.innerHTML = "<span class='tag-crit'>CRITICAL FAILURE: TRIGGERING RECOVERY EVENT SEQUENCE...</span>";
+                triggerSequence1982();
+            } else {
+                feedback.innerHTML = "<span class='tag-warn'>INVALID SEQUENCE OVERRIDE CODE.</span>";
+            }
+            input.value = '';
+        }
+
+        const termInput = document.getElementById('term-in');
+        const termOutput = document.getElementById('term-out');
+        
+        if (termInput) {
+            termInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    const cmd = termInput.value.trim();
+                    executeCommand(cmd);
+                    termInput.value = '';
+                }
+            });
+        }
+
+        function printTerm(text, type = '') {
+            if (!termOutput) return;
+            let color = '#00ff66';
+            if (type === 'white') color = '#ffffff';
+            if (type === 'error') color = '#ff3333';
+            if (type === 'warn') color = '#ffaa00';
+            termOutput.innerHTML += `<div style="color: ${color};">${text}</div>`;
+            termOutput.scrollTop = termOutput.scrollHeight;
+        }
+
+        function executeCommand(cmd) {
+            printTerm(`CID:\\SYS&gt; ${cmd}`, 'white');
+            const upperCmd = cmd.toUpperCase();
+
+            switch(upperCmd) {
+                case 'HELP':
+                    printTerm('AVAILABLE ENCRYPTED DIRECTORIES:');
+                    printTerm(' - CID : View organization structural parameters.');
+                    printTerm(' - CLOE : Pull dedicated biological subject status logs.');
+                    printTerm(' - DREAM : Access project conceptual core database.');
+                    printTerm(' - 486 : Decrypt file block 486.');
+                    printTerm(' - 332 : Decrypt file block 332.');
+                    printTerm(' - 1982 : [WARNING: ROOT ACCESS SYSTEM OVERRIDE SEQUENCE]');
+                    break;
+                case 'CID':
+                    printTerm('CENTER INFORMATION DREAM // ESTABLISHED POST-1982 RECOVERY.');
+                    printTerm('OBJECTIVE: ARCHIVE AND SECURE COGNITIVE ANOMALIES FOR PUBLIC SAFETY.');
+                    printTerm('OFFICIAL LEVEL: HIGH SECURITY GOVERNMENT FACILITY.');
+                    break;
+                case 'CLOE':
+                    printTerm('SUBJECT: CLOE');
+                    printTerm('AGE AT RECOVERY: DECLASSIFIED');
+                    printTerm('CURRENT BIO-SIGN: AMBIGUOUS.');
+                    printTerm('NOTES: Laboratory substructure reports active link despite zero conscious interaction.');
+                    break;
+                case 'DREAM':
+                    printTerm('SEARCH://DREAM ... ERROR.');
+                    printTerm('QUERY ACCESS BLOCKED BY INFRASTRUCTURE COMMAND.', 'warn');
+                    printTerm('Something is interacting with the system from inside the network array.');
+                    break;
+                case '486':
+                    printTerm('ARCHIVE_486: "They found 4 individuals. They were not human. Not anymore. But they looked like us."');
+                    break;
+                case '332':
+                    printTerm('ARCHIVE_332: "The facility built below the ground in 1982 wasn\'t registered. It was built to contain the signal."');
+                    break;
+                case '1982':
+                    printTerm('INITIATING FORCED INJECTION CODE: 1982...', 'error');
+                    triggerSequence1982();
+                    break;
+                case '':
+                    break;
+                default:
+                    printTerm(`BAD COMMAND OR FILE NAME: "${cmd}"`, 'error');
+            }
+        }
+
+        function triggerSequence1982() {
+            if (isCorrupted) return;
+            isCorrupted = true;
+
+            playSound('sndGlitch', 'glitch');
+
+            const audio = document.getElementById('incidentAudio');
+            if (audio) {
+                audio.play().catch(err => console.log("Incident Audio skip:", err));
+            }
+
+            document.body.classList.add('corrupted');
+            const statusEl = document.getElementById('header-net-status');
+            if (statusEl) {
+                statusEl.textContent = "CORRUPTED_SYSTEM_BREACH_1982";
+                statusEl.style.color = '#ff3333';
+            }
+
+            corruptAllTextOnSite();
+            setInterval(spawnWin95Popup, 600);
+        }
+
+        function corruptAllTextOnSite() {
+            const targetDumps = dumpConfigs.map(cfg => document.getElementById(cfg.id));
+            targetDumps.forEach(dump => {
+                if (!dump) return;
+                let corruptedHtml = '';
+                for(let i=0; i<300; i++) {
+                    if (Math.random() > 0.4) {
+                        corruptedHtml += `<a href="https://youtu.be/ESuRBiHXQvY" target="_blank" class="yt-spam-link">https://youtu.be/ESuRBiHXQvY</a>`;
+                    } else {
+                        corruptedHtml += `<div class="dump-line" style="color:#ff3333;">[CORRUPTED_EVENT_1982] -- WHY? -- SEARCH://DREAM FOUND CLOE CLOE CLOE</div>`;
+                    }
+                }
+                dump.innerHTML = corruptedHtml;
+            });
+
+            setInterval(() => {
+                printTerm('https://youtu.be/ESuRBiHXQvY', 'error');
+            }, 100);
+        }
+
+        const popupMessages = [
+            "DREAM", "WHY?", "CLOE", "SEARCH://DREAM", "1982", "SUBJECT FOUND", "ARCHIVE CORRUPTED", "RECOVERY EVENT FOUND"
+        ];
+
+        function spawnWin95Popup() {
+            if (isMutedByVisibility) return;
+            playSound('sndPopup', 'popup');
+
+            const popup = document.createElement('div');
+            popup.className = 'win95-popup';
+            
+            const posX = Math.floor(Math.random() * (window.innerWidth - 320));
+            const posY = Math.floor(Math.random() * (window.innerHeight - 150));
+            popup.style.left = posX + 'px';
+            popup.style.top = posY + 'px';
+
+            const msg = popupMessages[Math.floor(Math.random() * popupMessages.length)];
+
+            popup.innerHTML = `
+                <div class="win95-title">
+                    <span>System Message</span>
+                    <div class="win95-close" onclick="this.closest('.win95-popup').remove()">X</div>
+                </div>
+                <div class="win95-body">
+                    <div style="margin-bottom:10px; font-weight:bold; color:#000;">${msg}</div>
+                    <a href="https://youtu.be/ESuRBiHXQvY" target="_blank" class="win95-btn" style="text-decoration:none; color:#000; font-size:11px;">OK</a>
+                </div>
+            `;
+
+            document.body.appendChild(popup);
+        }
+
+        window.onload = function() {
+            generateHugeDataDumps();
+            generateMachines();
+        };
+    </script>
+</body>
+</html>
